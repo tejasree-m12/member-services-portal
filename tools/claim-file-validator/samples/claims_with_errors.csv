@@ -1,0 +1,6 @@
+claim_number,member_number,member_name,provider_npi,provider_name,service_date,procedure_code,diagnosis_code,billed_amount,approved_amount,status,denial_reason
+CLM-900001,MBR-10001,Sample Member,1234567893,Dr. Sample One,2026-03-02,99213,E11.9,150.00,,submitted,
+CLM-900002,MBR-10002,Sample Member Two,1234567890,Dr. Sample Two,2026-03-04,99214,I10,220.00,200.00,paid,
+CLM-900003,MBR-10003,Sample Member Three,1245319599,Dr. Sample Three,2026-03-05,9921,E11.9,180.00,190.00,approved,
+CLM-900004,MBR-10004,Sample Member Four,1245319599,Dr. Sample Three,03/06/2026,93000,R00.2,95.00,,denied,
+CLM-900001,MBR-10005,Sample Member Five,1234567893,Dr. Sample One,2026-03-07,80053,Z00.00,60.00,,in_review,

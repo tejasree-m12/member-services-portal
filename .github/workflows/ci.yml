@@ -1,0 +1,84 @@
+# Continuous integration: runs on every push and pull request.
+# A pull request cannot be merged with confidence unless all three jobs are green.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call: # lets deploy.yml run these same checks before deploying
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (PyTest)
+    runs-on: ubuntu-latest
+    # A real MySQL server, started in a container next to the job, so the
+    # integration tests run against the same database engine as production.
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: member_portal_test
+          MYSQL_USER: portal
+          MYSQL_PASSWORD: portal_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot_password"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Unit tests (no database server needed)
+        run: pytest -m unit
+      - name: Full test suite against MySQL, with coverage
+        env:
+          TEST_DATABASE_URL: mysql+pymysql://portal:portal_password@127.0.0.1:3306/member_portal_test?charset=utf8mb4
+        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=85
+
+  frontend:
+    name: Frontend (Vitest + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # "npm ci" installs exactly what package-lock.json says, so CI and
+      # every developer build with identical dependency versions.
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  java:
+    name: Claim file validator (JUnit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/claim-file-validator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - run: mvn -B test

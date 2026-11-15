@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Secrets and local settings (never commit these)
+.env
+*.pem
+
+# Local data
+backend/uploads/
+*.db
+
+# Node
+node_modules/
+frontend/dist/
+
+# Java
+target/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Flask instance folder (local SQLite file)
+instance/

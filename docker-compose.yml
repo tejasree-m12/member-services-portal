@@ -1,0 +1,24 @@
+# Local MySQL for development:  docker compose up -d
+# The credentials below match the default DATABASE_URL in backend/.env.example.
+# They are for your own machine only. Never reuse them on a real server.
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: member_portal
+      MYSQL_USER: portal
+      MYSQL_PASSWORD: portal_password
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql_data:

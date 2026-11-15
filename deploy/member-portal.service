@@ -1,0 +1,25 @@
+# systemd unit: keeps gunicorn running, restarts it if it crashes, and starts
+# it when the server boots.
+# Install as /etc/systemd/system/member-portal.service
+
+[Unit]
+Description=Member Services Portal API (gunicorn)
+After=network.target mysql.service
+
+[Service]
+User=portal
+Group=portal
+WorkingDirectory=/opt/member-portal/backend
+# Secrets and settings live in this file on the server, not in git.
+EnvironmentFile=/opt/member-portal/backend/.env
+ExecStart=/opt/member-portal/venv/bin/gunicorn wsgi:app \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile -
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
